@@ -21,6 +21,14 @@ commands:
             sudo add-apt-repository --yes --update ppa:ansible/ansible
             sudo apt install ansible
 
+  destroy_environment:
+    description: To be used to roll back the deployment of infrastructure
+    steps:
+      - run:
+          name: Delete backend/frontend stack
+          command: |
+            aws cloudformation delete-stack udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7
+            aws cloudformation delete-stack udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7
 jobs:
   build-frontend:
     docker:
@@ -153,7 +161,8 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure
+
+      - destroy_environment
 
 workflows:
   default:
