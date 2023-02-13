@@ -188,11 +188,12 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
           keys: [backend-build]
+      - install_awscli
       - run:
           name: Run migrations
           command: |
