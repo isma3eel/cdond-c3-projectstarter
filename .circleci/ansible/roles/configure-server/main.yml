@@ -29,9 +29,6 @@
     production: yes
     state: present
 
-- name: "install python"
-  shell: |
-    sudo apt install software-properties-common
-    sudo add-apt-repository ppa:deadsnakes/ppa
-    sudo apt update
-    sudo apt install python3.8
+- name: Install Python
+  raw: apt -y update && apt install -y python-minimal
+  when: check_python.rc != 0
