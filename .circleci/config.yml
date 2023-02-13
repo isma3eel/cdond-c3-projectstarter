@@ -162,7 +162,25 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
 
-      - destroy_environment
+      #- destroy_environment
+
+  configure-infrastructure:
+    docker:
+      - image: cimg/base:2023.02
+    steps:
+      - checkout
+      - intall_ansible
+      - install_awscli
+      - add_ssh_keys:
+          fingerprints: ["61:0b:62:26:69:c4:50:57:b1:48:7d:78:5d:a8:d2:fe"]
+      - attach_workspace:
+          at: ~/
+
+      - run:
+          name: Configure server and run playbook
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
 
 workflows:
   default:
