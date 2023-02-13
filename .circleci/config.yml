@@ -188,7 +188,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: cimg/node:19.6.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -213,27 +213,27 @@ jobs:
 
       - destroy_environment
 
-  deploy-frontend:
-    docker:
-      - image: cimg/base:2023.02
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            - install_awscli
-            - intall_ansible
-      - run:
-          name: Get backend url
-          command: |
-            # your code here
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-      - run:
-          name: Deploy frontend objects
-          command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure
+  # deploy-frontend:
+  #   docker:
+  #     - image: cimg/base:2023.02
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           - install_awscli
+  #           - intall_ansible
+  #     - run:
+  #         name: Get backend url
+  #         command: |
+  #           # your code here
+  #           export API_URL="http://${BACKEND_IP}:3030"
+  #           echo "${API_URL}"
+  #     - run:
+  #         name: Deploy frontend objects
+  #         command: |
+  #           # your code here
+  #     # Here's where you will add some code to rollback on failure
 
 workflows:
   default:
