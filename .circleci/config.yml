@@ -50,7 +50,7 @@ commands:
           name: revert the last migration on fail trigger
           when: on_fail
           command: |
-            success = $(curl --insecure https://kvdb.io/GKGSpmB7JF1fQfpMf6XRSx/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            success=$(curl --insecure https://kvdb.io/GKGSpmB7JF1fQfpMf6XRSx/migration_${CIRCLE_WORKFLOW_ID:0:7})
             if ($success == 1);
             then
               cd ~/project/backend
@@ -291,23 +291,20 @@ jobs:
           fingerprints: ["61:0b:62:26:69:c4:50:57:b1:48:7d:78:5d:a8:d2:fe"]
       - attach_workspace:
           at: ~/
-
       - run:
           name: Install dependencies
           command: |
             cd backend
             npm install
-
       - run:
           name: Package backend
           command: |
             cd backend
             npm run build
             tar -czf artifact.tar.gz dist/* package*
-
             cd ..
             cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
-
+            ls .circleci/ansible/roles/deploy/files
       - run:
           name: Deploy backend
           command: |
