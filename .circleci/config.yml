@@ -75,6 +75,10 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
+      - run:
+          name: Workflow ID Announcment
+          command: |
+            echo "This is the workflow-ID: ${CIRCLE_WORKFLOW_ID:0:7}"
 
   build-backend:
     docker:
@@ -319,6 +323,54 @@ jobs:
       - destroy_environment
       - revert_migration
 
+  smoke-test:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_awscli
+      - install_nodesjs
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       # your code here
+      - run:
+          name: get backend url
+          command: |
+            BACKEND_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+      - run:
+          name: Backend smoke test.
+          command: |
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                return 0
+                echo "Everything in the backend is working fine!"
+            else
+                return 1
+                "ooops, backend seems to be down"
+            fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"
+            echo ${URL}
+            if curl -s ${URL} | grep "Welcome"
+            then
+              echo "Frontend is reachable but return 1 for testing"
+              return 1
+            else
+              echo "Frontend is NOT reachable!"
+              return 1
+            fi
+
+      - destroy_environment
+      - revert_migration
+
 workflows:
   default:
     jobs:
@@ -341,3 +393,5 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
