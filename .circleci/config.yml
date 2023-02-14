@@ -347,12 +347,12 @@ jobs:
           name: Backend smoke test.
           command: |
             echo "${API_URL}"
-            if curl "${API_URL}/api/status" | grep "ok"
+            if curl -s "${API_URL}/api/status" | grep "ok"
             then
-              return 0
+              exit 0
               echo "Everything in the backend is working fine!"
             else
-              return 1
+              exit 1 
               "ooops, backend seems to be down"
             fi
       - run:
@@ -363,10 +363,10 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
               echo "Frontend is reachable but return 1 for testing"
-              return 1
+              exit 1
             else
               echo "Frontend is NOT reachable!"
-              return 1
+              exit 1
             fi
 
       - destroy_environment
