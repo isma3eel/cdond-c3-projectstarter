@@ -208,7 +208,7 @@ jobs:
           name: configure servers and run playbook
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt configure-servers.yml
+            ansible-playbook -i inventory.txt configure-server.yml
 
       - destroy_environment
 
