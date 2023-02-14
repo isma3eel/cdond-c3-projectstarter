@@ -42,6 +42,21 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+
+  revert_migration:
+    description: revert the last migration on fail trigger
+    steps:
+      - run:
+          name: revert the last migration on fail trigger
+          when: on_fail
+          command: |
+            success = $(curl --insecure https://kvdb.io/GKGSpmB7JF1fQfpMf6XRSx/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            if ($success == 1);
+            then
+              cd ~/project/backend
+              npm install
+              npm run migration:revert
+            fi
 jobs:
   build-frontend:
     docker:
@@ -190,10 +205,10 @@ jobs:
           at: ~/
 
       - run:
-          name: Configure server and run playbook
+          name: configure servers and run playbook
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt configure-server.yml
+            ansible-playbook -i inventory.txt configure-servers.yml
 
       - destroy_environment
 
@@ -224,6 +239,7 @@ jobs:
             fi
 
       - destroy_environment
+      - revert_migration
 
   deploy-frontend:
     docker:
@@ -255,9 +271,55 @@ jobs:
           command: |
             cd frontend
             npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
 
       - destroy_environment
+      - revert_migration
+
+  deploy-backend:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - intall_ansible
+      - install_awscli
+      - install_nodesjs
+      - restore_cache:
+          keys: [backend-build]
+      - add_ssh_keys:
+          fingerprints: ["61:0b:62:26:69:c4:50:57:b1:48:7d:78:5d:a8:d2:fe"]
+      - attach_workspace:
+          at: ~/
+
+      - run:
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install
+
+      - run:
+          name: Package backend
+          command: |
+            cd backend
+            npm run build
+            tar -czf artifact.tar.gz dist/* package*
+
+            cd ..
+            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+
+      - run:
+          name: Deploy backend
+          command: |
+            export TYPEORM_MIGRATIONS_DIR=./migrations
+            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
+
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt deploy-backend.yml
+
+      - destroy_environment
+      - revert_migration
 
 workflows:
   default:
@@ -278,4 +340,6 @@ workflows:
       - run-migrations:
           requires: [configure-infrastructure]
       - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
           requires: [run-migrations]
