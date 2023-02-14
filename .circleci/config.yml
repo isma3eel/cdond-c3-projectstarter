@@ -335,25 +335,23 @@ jobs:
       #     command: |
       #       # your code here
       - run:
-          name: get backend url
+          name: backend smoke test
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
+
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-      - run:
-          name: Backend smoke test.
-          command: |
-            echo "${API_URL}"
+
             if curl -s "${API_URL}/api/status" | grep "ok"
             then
-              exit 0
               echo "Everything in the backend is working fine!"
+              exit 0
             else
-              exit 1 
               "ooops, backend seems to be down"
+              exit 1 
             fi
       - run:
           name: Frontend smoke test.
