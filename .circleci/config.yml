@@ -346,13 +346,14 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
+            echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
-                return 0
-                echo "Everything in the backend is working fine!"
+              return 0
+              echo "Everything in the backend is working fine!"
             else
-                return 1
-                "ooops, backend seems to be down"
+              return 1
+              "ooops, backend seems to be down"
             fi
       - run:
           name: Frontend smoke test.
