@@ -360,8 +360,8 @@ jobs:
             echo ${URL}
             if curl -s ${URL} | grep "Welcome"
             then
-              echo "Frontend is reachable but return 1 for testing"
-              exit 1
+              echo "Frontend is reachable"
+              exit 0
             else
               echo "Frontend is NOT reachable!"
               exit 1
