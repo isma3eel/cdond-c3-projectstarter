@@ -26,6 +26,7 @@ In this project, you will prove your mastery of the following learning objective
 
 ### Project Submission
 
+
 For your submission, please submit the following:
 
 - A text file named `urls.txt` including:
