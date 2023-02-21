@@ -50,7 +50,8 @@ commands:
           name: revert the last migration on fail trigger
           when: on_fail
           command: |
-            success=$(curl --insecure https://kvdb.io/GKGSpmB7JF1fQfpMf6XRSx/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            # success=$(curl --insecure https://kvdb.io/GKGSpmB7JF1fQfpMf6XRSx/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            success=1
             if (($success == 1));
             then
               echo "Migration Start"
